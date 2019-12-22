@@ -24,30 +24,34 @@ def main():
 
 
 def droxy_cmd_handler():
-    """py:function:: droxy_cmd_handler()
+    """　"$ droxy" で呼び出された関数の中身
 
-    droxy_cmd_handlerはdroxyコマンドを呼び出されたときに実行される関数です。
+    droxy_cmd_handlerはdroxyコマンドを呼び出されたときに実行される関数です。\
     droxyコマンドはdroxy自体の操作を行います。
     """
     pass
 
 
 def call_cmd(cmd_name: str):
-    """py:function:: call_cmd(cmd_name)
+    """ シェルコマンドの呼び出し
+    
+    call_cmd は cmd_name で指定されたシェルコマンドにプロクシ設定を施した上で\
+    実行する関数です。
 
-    call_cmd は cmd_name で指定されたシェルコマンドにプロクシ設定を施した上で実行
-    する関数です。
-
-    :param str cmd_name: 呼び出すシェルコマンド
-    :return: ステータスコード
-    :rtype: int
+    Args:
+        cmd_name (str): 呼び出すシェルコマンド
+    
+    Returns:
+        int: ステータスコード
     """
     pass
 
 
 def command(name: str):
-    """py:decorator:: command(name)
-    command はシェルコマンドラッパー関数を登録するデコレータです。
-    :param str name: コマンド名です。pythonの関数名で使用可能な文字集合とコマンド名
-    として使用可能な文字集合は異なるため、このような引数を必要とします。
+    """ シェルコマンドラッパー関数を登録するデコレータ
+
+    Args:
+        name (str): コマンド名
+        pythonの関数名で使用可能な文字集合とコマンド名として\
+        使用可能な文字集合は異なるため、このような引数を必要とします。
     """

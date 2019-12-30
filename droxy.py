@@ -9,6 +9,7 @@ Proxy設定をssidごとに行うツールdroxyのプロトタイプ版です。
 
 import argparse
 import sys
+import os
 from subprocess import run
 from typing import Callable, Sequence, Dict
 
@@ -51,8 +52,13 @@ def call_cmd(cmd_line: Sequence[str]):
     Returns:
         int: ステータスコード
     """
+    cmd = cmd_line[0]
     args = cmd_line[1:]
-    status = name2cmd[cmd_line[0]](args, {'http': 'proxy.example.com'})
+    proxys = {'http': 'proxy.example.com'}
+    if cmd in name2cmd:
+        status = name2cmd[cmd](args, proxys)
+    else:
+        status = default(cmd, args, proxys)
     return status
 
 
@@ -88,6 +94,13 @@ def dummy_status_code(args: Sequence[str], proxys: dict):
     except:
         print('引数エラー')
     return code
+
+
+def default(cmd: str, args: Sequence[str], proxys: dict):
+    environ = os.environ
+    environ.update(proxys)
+    result = run((cmd,) + tuple(args), env=environ)
+    return result.returncode
 
 
 if __name__ == "__main__":

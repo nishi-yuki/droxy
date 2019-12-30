@@ -10,13 +10,13 @@ Proxy設定をssidごとに行うツールdroxyのプロトタイプ版です。
 import argparse
 import sys
 from subprocess import run
-from typing import Callable, Sequence
+from typing import Callable, Sequence, Dict
 
 
 DROXY_CMD_NAME = 'droxy'
 
 
-name2cmd = {}
+name2cmd: Dict[str, Callable] = {}
 
 
 def main():
@@ -65,10 +65,13 @@ def command(name: str):
     return decorator
 
 
-@command('dummy-cmd') # コマンド名に"-" つかえます
+@command('dummy-cmd')  # コマンド名に"-" つかえます
 def dummy_command(args: Sequence[str], proxys: dict):
+    '''テスト用のダミーコマンド
+    Droxyの動作チェックができます
+    '''
     print('dummy-cmd called!')
-    print('Execed like this:', ['dummy-cmd'] + args)
+    print('Execed like this:', ('dummy-cmd',) + tuple(args))
     print('proxys =', proxys)
     print('bye!')
 

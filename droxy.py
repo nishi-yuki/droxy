@@ -40,7 +40,7 @@ def droxy_cmd_handler():
     print('Droxy 0.0.1')
 
 
-def call_cmd(cmd_line: Sequence[str]):
+def call_cmd(cmd_line: Sequence[str]) -> int:
     """ シェルコマンドの呼び出し
 
     call_cmd は cmd_name で指定されたシェルコマンドにプロクシ設定を施した上で\
@@ -62,12 +62,14 @@ def call_cmd(cmd_line: Sequence[str]):
     return status
 
 
-def command(name: str):
+def command(name: str) -> Callable:
     """ シェルコマンドラッパー関数を登録するデコレータ
 
     Args:
         name (str): コマンド名 pythonの関数名で使用可能な文字集合とコマンド名として\
         使用可能な文字集合は異なるため、このような引数を必要とします。
+    Returns:
+        int: ステータスコード
     """
     def decorator(f: Callable[[Sequence[str], dict], int]):
         name2cmd[name] = f
@@ -75,7 +77,7 @@ def command(name: str):
 
 
 @command('dummy-cmd')  # コマンド名に"-" つかえます
-def dummy_command(args: Sequence[str], proxys: dict):
+def dummy_command(args: Sequence[str], proxys: dict) -> int:
     '''テスト用のダミーコマンド
     Droxyの動作チェックができます
     '''
@@ -87,7 +89,7 @@ def dummy_command(args: Sequence[str], proxys: dict):
 
 
 @command('dummy-status-code')
-def dummy_status_code(args: Sequence[str], proxys: dict):
+def dummy_status_code(args: Sequence[str], proxys: dict) -> int:
     code = 166
     try:
         code = int(args[0])
@@ -96,7 +98,7 @@ def dummy_status_code(args: Sequence[str], proxys: dict):
     return code
 
 
-def default(cmd: str, args: Sequence[str], proxys: dict):
+def default(cmd: str, args: Sequence[str], proxys: dict) -> int:
     environ = os.environ
     environ.update(proxys)
     result = run((cmd,) + tuple(args), env=environ)

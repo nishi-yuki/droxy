@@ -22,10 +22,12 @@ name2cmd: Dict[str, Callable] = {}
 def main():
     argc = len(sys.argv)
 
+    status = 1
     if argc == 1:
         droxy_cmd_handler()
     else:
-        call_cmd(sys.argv[1:])
+        status = call_cmd(sys.argv[1:])
+    exit(status)
 
 
 def droxy_cmd_handler():
@@ -50,7 +52,8 @@ def call_cmd(cmd_line: Sequence[str]):
         int: ステータスコード
     """
     args = cmd_line[1:]
-    name2cmd[cmd_line[0]](args, {'http': 'proxy.example.com'})
+    status = name2cmd[cmd_line[0]](args, {'http': 'proxy.example.com'})
+    return status
 
 
 def command(name: str):
@@ -74,6 +77,16 @@ def dummy_command(args: Sequence[str], proxys: dict):
     print('Execed like this:', ('dummy-cmd',) + tuple(args))
     print('proxys =', proxys)
     print('bye!')
+    return 0
+
+@command('dummy-status-code')
+def dummy_status_code(args: Sequence[str], proxys: dict):
+    code = 166
+    try:
+        code = int(args[0])
+    except:
+        print('引数エラー')
+    return code
 
 
 if __name__ == "__main__":

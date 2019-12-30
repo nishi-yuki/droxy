@@ -79,6 +79,7 @@ def dummy_command(args: Sequence[str], proxys: dict):
     print('bye!')
     return 0
 
+
 @command('dummy-status-code')
 def dummy_status_code(args: Sequence[str], proxys: dict):
     code = 166

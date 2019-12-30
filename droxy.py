@@ -14,9 +14,6 @@ from subprocess import run
 from typing import Callable, Sequence, Dict
 
 
-DROXY_CMD_NAME = 'droxy'
-
-
 name2cmd: Dict[str, Callable] = {}
 
 

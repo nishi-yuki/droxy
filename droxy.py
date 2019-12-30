@@ -20,14 +20,12 @@ name2cmd = {}
 
 
 def main():
-    name_called = sys.argv[0]
+    argc = len(sys.argv)
 
-    if name_called == DROXY_CMD_NAME:
-        # コマンドのラッパーとしてではなくdroxy自体を呼び出された。
+    if argc == 1:
         droxy_cmd_handler()
     else:
-        # 他のシェルコマンドのラッパーとしてソフトリンク経由で呼び出された。
-        call_cmd(name_called)
+        call_cmd(sys.argv[1:])
 
 
 def droxy_cmd_handler():
@@ -36,18 +34,18 @@ def droxy_cmd_handler():
     droxy_cmd_handlerはdroxyコマンドを呼び出されたときに実行される関数です。\
     droxyコマンドはdroxy自体の操作を行います。
     """
-    pass
+    print('Droxy 0.0.1')
 
 
-def call_cmd(cmd_name: str):
+def call_cmd(cmd_line: Sequence[str]):
     """ シェルコマンドの呼び出し
-    
+
     call_cmd は cmd_name で指定されたシェルコマンドにプロクシ設定を施した上で\
     実行する関数です。
 
     Args:
         cmd_name (str): 呼び出すシェルコマンド
-    
+
     Returns:
         int: ステータスコード
     """
@@ -60,7 +58,7 @@ def command(name: str):
 
     Args:
         name (str): コマンド名 pythonの関数名で使用可能な文字集合とコマンド名として\
-    使用可能な文字集合は異なるため、このような引数を必要とします。
+        使用可能な文字集合は異なるため、このような引数を必要とします。
     """
     def decorator(f: Callable[[Sequence[str], dict], int]):
         name2cmd[name] = f

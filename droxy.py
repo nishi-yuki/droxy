@@ -169,7 +169,7 @@ def dummy_status_code(args: Sequence[str], proxys: dict) -> int:
 
 
 def default(cmd: str, args: Sequence[str], proxys: dict) -> int:
-    upper_proxys = {k.upper():v for k,v in proxys.items()}
+    upper_proxys = {k.upper(): v for k, v in proxys.items()}
     environ = os.environ
     environ.update(proxys)
     environ.update(upper_proxys)

@@ -10,17 +10,39 @@ Proxy設定をssidごとに行うツールdroxyのプロトタイプ版です。
 import argparse
 import sys
 import os
-from subprocess import run
-from typing import Callable, Sequence, Dict
+import configparser
+from pathlib import Path
+from subprocess import run, PIPE
+from typing import Callable, Sequence, Dict, Optional
 
+
+xdg_config_home = os.getenv('XDG_CONFIG_HOME', '.config')
+SSID_PROXY_CONFIG_FILE_NAME = 'ssid-proxy.conf'
+SSID_PROXY_CONFIG_FILE_PATHS = [
+    Path(__file__).parent/SSID_PROXY_CONFIG_FILE_NAME,
+    # 下のパスは nishi-yuki/proxy-conf-by-ssid との互換性のため
+    Path.home()/xdg_config_home/SSID_PROXY_CONFIG_FILE_NAME,
+    Path.home()/xdg_config_home/'droxy'/SSID_PROXY_CONFIG_FILE_NAME,
+]
 
 name2cmd: Dict[str, Callable] = {}
+proxy_config: configparser.ConfigParser
 
 
 def main():
     argc = len(sys.argv)
-
     status = 1
+
+    try:
+        init_config()
+    except ConfigFileNotFoundError:
+        print('エラー:', 'ssid-proxy.confファイルが見つかりません\n'
+              'ssid-proxy.confファイルは以下の場所のいずれかに配置される必要があります\n'
+              + '  ' + '\n  '.join([str(p.absolute())
+                                    for p in SSID_PROXY_CONFIG_FILE_PATHS]),
+              file=sys.stderr)
+        exit(105)
+
     if argc == 1:
         droxy_cmd_handler()
     else:
@@ -51,12 +73,64 @@ def call_cmd(cmd_line: Sequence[str]) -> int:
     """
     cmd = cmd_line[0]
     args = cmd_line[1:]
-    proxys = {'http': 'proxy.example.com'}
+    proxys = get_proxys(get_ssid())
     if cmd in name2cmd:
         status = name2cmd[cmd](args, proxys)
     else:
         status = default(cmd, args, proxys)
     return status
+
+
+class ConfigFileNotFoundError(Exception):
+    pass
+
+
+def init_config():
+    "設定ファイルを読み込みます"
+    global proxy_config
+    proxy_config = configparser.ConfigParser()
+    config_path = None
+
+    # 優先度の高い順に設定ファイルを探す
+    for path in SSID_PROXY_CONFIG_FILE_PATHS:
+        if path.exists():
+            config_path = path
+            break
+    # 設定ファイルが見つからなかったとき
+    if not config_path:
+        raise ConfigFileNotFoundError
+    proxy_config.read(config_path)
+
+
+def get_ssid() -> Optional[str]:
+    """ 現在のSSID名を取得します
+
+    Returns:
+        str: SSID
+    """
+    compproc = run(['iwgetid', '--raw'], stdout=PIPE)
+    status = compproc.returncode
+    try:
+        ssid = compproc.stdout.decode('UTF8').strip()
+    except UnicodeDecodeError:
+        return ''
+
+    if status == 0:
+        return ssid
+    else:
+        return None
+
+
+def get_proxys(ssid: Optional[str]) -> dict:
+    """ SSID名からプロクシ設定を取得します
+
+    Args:
+        ssid (Optional[str]): ssid名 Noneを渡した場合、空の辞書が返されます。
+    """
+    if ssid in proxy_config:
+        return dict(proxy_config[ssid])  # type: ignore
+    else:
+        return {}
 
 
 def command(name: str) -> Callable:

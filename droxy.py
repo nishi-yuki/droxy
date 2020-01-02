@@ -7,7 +7,6 @@ Proxy設定をssidごとに行うツールdroxyのプロトタイプ版です。
 日本語が多いです。コメントもゆるふわです。ゆるしてね。
 '''
 
-import argparse
 import sys
 import os
 import configparser

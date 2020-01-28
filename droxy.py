@@ -197,9 +197,19 @@ def git(args: Sequence[str], proxys: dict) -> int:
     return rc
 
 
-################################################################################
-#    その他すべて
-################################################################################
+@command('ghq')
+def ghq(args: Sequence[str], proxys: dict) -> int:
+    try:
+        set_git_http_proxy(proxys)
+        rc = run(['ghq'] + args).returncode
+    finally:
+        unset_git_http_proxy()
+    return rc
+
+
+    ################################################################################
+    #    その他すべて
+    ################################################################################
 
 
 def default(cmd: str, args: Sequence[str], proxys: dict) -> int:

@@ -178,7 +178,7 @@ def sudo(args: Sequence[str], proxys: dict) -> int:
     """ 管理者権限で実行する
     droxyを管理者権限で実行するための特殊な内部コマンド
     """
-    run(['sudo', Path(__file__).absolute()] + args)
+    return run(['sudo', Path(__file__).absolute()] + args).returncode
 
 ################################################################################
 #    外部コマンド

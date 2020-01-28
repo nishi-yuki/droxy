@@ -11,7 +11,7 @@ import sys
 import os
 import configparser
 from pathlib import Path
-from subprocess import run, PIPE
+from subprocess import run, PIPE, DEVNULL
 from typing import Callable, Sequence, Dict, Optional
 
 
@@ -23,6 +23,8 @@ SSID_PROXY_CONFIG_FILE_PATHS = [
     Path.home()/xdg_config_home/SSID_PROXY_CONFIG_FILE_NAME,
     Path.home()/xdg_config_home/'droxy'/SSID_PROXY_CONFIG_FILE_NAME,
 ]
+HTTP_PROXY_KEY = 'http_proxy'
+HTTPS_PROXY_KEY = 'https_proxy'
 
 name2cmd: Dict[str, Callable] = {}
 proxy_config: configparser.ConfigParser
@@ -185,6 +187,16 @@ def sudo(args: Sequence[str], proxys: dict) -> int:
 ################################################################################
 
 
+@command('git')
+def git(args: Sequence[str], proxys: dict) -> int:
+    try:
+        set_git_http_proxy(proxys)
+        rc = run(['git'] + args).returncode
+    finally:
+        unset_git_http_proxy()
+    return rc
+
+
 ################################################################################
 #    その他すべて
 ################################################################################
@@ -197,6 +209,35 @@ def default(cmd: str, args: Sequence[str], proxys: dict) -> int:
     environ.update(upper_proxys)
     result = run((cmd,) + tuple(args), env=environ)
     return result.returncode
+
+
+################################################################################
+#   Utils
+################################################################################
+
+# git utils
+
+def set_git_http_proxy(proxys: dict):
+    if HTTPS_PROXY_KEY in proxys:
+        run(['git', 'config', '--global', 'https.proxy', proxys[HTTPS_PROXY_KEY]])
+    if HTTP_PROXY_KEY in proxys:
+        run(['git', 'config', '--global', 'http.proxy', proxys[HTTPS_PROXY_KEY]])
+
+
+def unset_git_http_proxy():
+    run(['git', 'config', '--global', '--unset', 'https.proxy'])
+    run(['git', 'config', '--global', '--unset', 'http.proxy'])
+    # unset section if empty
+    if is_gitconfig_section_empty('https'):
+        run(['git', 'config', '--global', '--remove-section', 'https'])
+    if is_gitconfig_section_empty('http'):
+        run(['git', 'config', '--global', '--remove-section', 'http'])
+
+
+def is_gitconfig_section_empty(section_name: str) -> bool:
+    rc = run(['git', 'config', '--global', '--get-regexp', '^'+section_name+'\\.'],
+             stdout=DEVNULL).returncode
+    return rc != 0
 
 
 if __name__ == "__main__":

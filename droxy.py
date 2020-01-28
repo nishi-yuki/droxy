@@ -191,9 +191,10 @@ def sudo(args: Sequence[str], proxys: dict) -> int:
 def git(args: Sequence[str], proxys: dict) -> int:
     try:
         set_git_http_proxy(proxys)
-        run(['git'] + args)
+        rc = run(['git'] + args).returncode
     finally:
         unset_git_http_proxy()
+    return rc
 
 
 ################################################################################
